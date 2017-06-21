@@ -3,3 +3,5 @@
 .DS_Store
 doc/Folien_zu_Aufgabe4.pdf
 clarify/*
+tree.dot
+tree.dot.png

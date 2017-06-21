@@ -132,6 +132,11 @@ findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element 
 
 % printBT: btree × filename → dot
 % printBT(<BTree>,<Filename>)
+printBT(BTree, Filename) ->
+  file:write_file(Filename, io_lib:fwrite("digraph avltree {  \n", []), [write]),
+  writeToFile(BTree, Filename),
+  file:write_file(Filename, io_lib:fwrite("} \n", []), [append]).
+
 
 
 % Helper
@@ -148,3 +153,23 @@ rotateRight({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
   HeightP1 = btree:max_height(CR1, CR2) + 1,
   HeightP2 = erlang:max(btree:height(CL2), HeightP1) + 1,
   {{P2, HeightP2}, CL2, {{P1, HeightP1}, CR2, CR1}}.
+
+
+% writes tree to given file
+writeToFile({{_Parent, 1}, _ChildLeft, _ChildRight}, _Filename) ->
+  ok;
+writeToFile({{Parent, _Height}, {}, ChildRight}, Filename) ->
+  {{CR1, HR1},_,_} = ChildRight,
+  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
+  writeToFile(ChildRight, Filename);
+writeToFile({{Parent, _Height}, ChildLeft, {}}, Filename) ->
+  {{CL1, HL1},_,_} = ChildLeft,
+  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
+  writeToFile(ChildLeft, Filename);
+writeToFile({{Parent, _Height}, ChildLeft, ChildRight}, Filename) ->
+  {{CL1, HL1},_,_} = ChildLeft,
+  {{CR1, HR1},_,_} = ChildRight,
+  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
+  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
+  writeToFile(ChildLeft, Filename),
+  writeToFile(ChildRight, Filename).
