@@ -129,3 +129,21 @@ height(_Object) -> 0.
 % Get max. height of the two given (partial) trees
 max_height({}, {}) -> 0;
 max_height(FirstTree, SecondTree) -> max(height(FirstTree), height(SecondTree)).
+
+
+%% Find minimum value in tree
+%% No sub-tree on left side of parent => parent already minimum
+minimum_node({{Parent, _Height}, {}, _ChildRight}) ->
+  Parent;
+%% Still sub-tree on left side of parent => parent not minimum
+minimum_node({_Parent, ChildLeft, _ChildRight}) ->
+  minimum_node(ChildLeft).
+
+
+%% Find maximum value in tree
+%% No sub-tree on right side of parent => parent already maximum
+maximum_node({{Parent, _Height}, _ChildLeft, {}}) ->
+  Parent;
+%% Still sub-tree on right side of parent => parent not maximum
+maximum_node({_Parent, _ChildLeft, ChildRight}) ->
+  maximum_node(ChildRight).

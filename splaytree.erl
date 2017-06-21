@@ -47,6 +47,36 @@ insertBT(BTree, Element) -> btree:insert_node(BTree, Element).
 
 % deleteBT: btree × elem → btree
 % deleteBT(<BTree>,<Element>)
+deleteBT({{Element, 1}, {}, {}}, Element) -> {};
+
+deleteBT({{Element, _}, LeftNode, RightNode}, Element) ->
+  % using the height function instead of pattern matching secures
+  % that this works even when one or both of the child nodes are empty
+  LeftHeight = btree:height(LeftNode),
+  RightHeight = btree:height(RightNode),
+  if
+    % getting the new parent from the partial tree with more levels secures that it works even when one partial tree is empty
+    LeftHeight > RightHeight ->
+      NewParent = btree:maximum_node(LeftNode),
+      NewLeftNode = deleteBT(LeftNode, NewParent),
+      {{NewParent, btree:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
+    true ->
+      NewParent = btree:minimum_node(RightNode),
+      NewRightNode = deleteBT(RightNode, NewParent),
+      {{NewParent, btree:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode}
+  end;
+
+deleteBT({{Parent, _}, LeftNode, RightNode}, Element) when Element < Parent ->
+  NewLeftNode = deleteBT(LeftNode, Element),
+  {{Parent, btree:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
+
+deleteBT({{Parent, _}, LeftNode, RightNode}, Element) when Element > Parent ->
+  NewRightNode = deleteBT(RightNode, Element),
+  {{Parent, btree:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode};
+
+% Element is not in tree, tree gets returned
+deleteBT(Tree, _Element) ->
+  Tree.
 
 
 % findSBT implements normal search, returns only the height of the node which equals the element
@@ -144,32 +174,32 @@ printBT(BTree, Filename) ->
 rotateLeft({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
   %% Update height P1 and P2 (all others remain the same)
   HeightP1 = btree:max_height(CL1, CL2) + 1,
-  HeightP2 = erlang:max(btree:height(CR2), HeightP1) + 1,
+  HeightP2 = max(btree:height(CR2), HeightP1) + 1,
   {{P2, HeightP2}, {{P1, HeightP1}, CL1, CL2}, CR2}.
 
 % rotate right = zick rotation
 rotateRight({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
   %% Update height P1 and P2 (all others remain the same)
   HeightP1 = btree:max_height(CR1, CR2) + 1,
-  HeightP2 = erlang:max(btree:height(CL2), HeightP1) + 1,
+  HeightP2 = max(btree:height(CL2), HeightP1) + 1,
   {{P2, HeightP2}, CL2, {{P1, HeightP1}, CR2, CR1}}.
 
 
 % writes tree to given file
-writeToFile({{_Parent, 1}, _ChildLeft, _ChildRight}, _Filename) ->
+writeToFile({{_Parent, 1}, _LeftChild, _RightChild}, _Filename) ->
   ok;
-writeToFile({{Parent, _Height}, {}, ChildRight}, Filename) ->
-  {{CR1, HR1},_,_} = ChildRight,
+writeToFile({{Parent, _Height}, {}, RightChild}, Filename) ->
+  {{CR1, HR1},_,_} = RightChild,
   file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
-  writeToFile(ChildRight, Filename);
-writeToFile({{Parent, _Height}, ChildLeft, {}}, Filename) ->
-  {{CL1, HL1},_,_} = ChildLeft,
+  writeToFile(RightChild, Filename);
+writeToFile({{Parent, _Height}, LeftChild, {}}, Filename) ->
+  {{CL1, HL1},_,_} = LeftChild,
   file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
-  writeToFile(ChildLeft, Filename);
-writeToFile({{Parent, _Height}, ChildLeft, ChildRight}, Filename) ->
-  {{CL1, HL1},_,_} = ChildLeft,
-  {{CR1, HR1},_,_} = ChildRight,
+  writeToFile(LeftChild, Filename);
+writeToFile({{Parent, _Height}, LeftChild, RightChild}, Filename) ->
+  {{CL1, HL1},_,_} = LeftChild,
+  {{CR1, HR1},_,_} = RightChild,
   file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
   file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
-  writeToFile(ChildLeft, Filename),
-  writeToFile(ChildRight, Filename).
+  writeToFile(LeftChild, Filename),
+  writeToFile(RightChild, Filename).
