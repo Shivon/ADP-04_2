@@ -1,5 +1,7 @@
 -module(splaytree).
 -compile(export_all).
+
+% TODO: rework btree to match Klauck's requirements!
 % -export([initBT/0, isEmptyBT/1, equalBT/2, isBT/1, insertBT/2, deleteBT/2, findSBT/2, findBT/2, findTP/2, printBT/2]).
 
 % ADT Splay­Tree: Vorgabe:
@@ -20,22 +22,27 @@
 
 % initBT: ∅ → btree
 % initBT()
+initBT() -> btree:init_btree().
 
 
 % isEmptyBT: btree → bool
 % isEmptyBT(<BTree>)
+isEmptyBT(BTree) -> btree:is_empty(BTree).
 
 
 % equalBT: btree × btree → bool
 % equalBT(<BTree>,<BTree>)
+equalBT(FirstBTree, SecondBTree) -> btree:equal(FirstBTree, SecondBTree).
 
 
 % isBT: btree → bool
 % isBT(<BTree>)
+isBT(BTree) -> btree:is_btree(BTree).
 
 
 % insertBT: btree × elem → btree
 % insertBT(<BTree>,<Element>)
+insertBT(BTree, Element) -> btree:insert_node(BTree, Element).
 
 
 % deleteBT: btree × elem → btree
@@ -43,9 +50,13 @@
 
 
 % findSBT implements normal search, returns only the height of the node which equals the element
-% returns nil when element not found
+% returns 0 when element not found (includes empty tree)
 % findSBT: btree × elem → int
 % findSBT(<BTree>,<Element>)
+findSBT({}, _Element) -> 0;
+findSBT({{Element, Height}, _LeftNode, _RightNode}, Element) -> Height;
+findSBT({{Parent, _Height}, LeftNode, _RightNode}, Element) when Parent > Element -> findSBT(LeftNode, Element);
+findSBT({{Parent, _Height}, _LeftNode, RightNode}, Element) when Parent < Element -> findSBT(RightNode, Element).
 
 
 % findBT implements Move-To-Root strategy (after successful search, node is moved to root of the tree)
@@ -59,7 +70,78 @@
 % returns height and modified tree
 % findTP: btree × elem → {int,btree}
 % findTP(<BTree>,<Element>)
+findTP({}, _Element) -> {0, {}};
+
+findTP({{Element, Height}, LeftNode, RightNode}, Element) ->
+  {Height, {{Element, Height}, LeftNode, RightNode}};
+
+findTP({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}, Element) ->
+  NewTree = rotateRight({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
+  {LeftHeight, NewTree};
+  % this uses new height of element
+  % NewHeight = btree:height(NewTree),
+  % {NewHeight, NewTree};
+
+findTP({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}, Element) ->
+  NewTree = rotateLeft({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
+  {RightHeight, NewTree};
+  % this uses new height of element
+  % NewHeight = btree:height(NewTree),
+  % {NewHeight, NewTree};
+
+findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
+  {ElementHeight, NewLeftNode} = findTP(LeftNode, Element),
+  NewParentHeight = btree:max_height(NewLeftNode, RightNode) + 1,
+  {ElementHeight, {{Parent, NewParentHeight}, NewLeftNode, RightNode}};
+
+findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element ->
+  {ElementHeight, NewRightNode} = findTP(RightNode, Element),
+  NewParentHeight = btree:max_height(LeftNode, NewRightNode) + 1,
+  {ElementHeight, {{Parent, NewParentHeight}, LeftNode, NewRightNode}}.
 
 
 % printBT: btree × filename → dot
 % printBT(<BTree>,<Filename>)
+
+
+% Helper
+% zick-Rotation (Rechts-Rotation)
+% zack-Rotation (Links-Rotation)
+% zick-zick-Rotation (2x Rechts-Rotation)
+% zack-zack-Rotation (2x Links-Rotation)
+% zack-zick-Rotation (Links-Rotation gefolgt von einer Rechts-Rotation)
+% zick-zack-Rotation (Rechts-Rotation gefolgt von einer Links-Rotation)
+
+% rotate left
+rotateLeft({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
+  %% Update height P1 and P2 (all others remain the same)
+  HeightP1 = btree:max_height(CL1, CL2) + 1,
+  HeightP2 = erlang:max(btree:height(CR2), HeightP1) + 1,
+  {{P2, HeightP2}, {{P1, HeightP1}, CL1, CL2}, CR2}.
+
+% rotate right
+rotateRight({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
+  %% Update height P1 and P2 (all others remain the same)
+  HeightP1 = btree:max_height(CR1, CR2) + 1,
+  HeightP2 = erlang:max(btree:height(CL2), HeightP1) + 1,
+  {{P2, HeightP2}, CL2, {{P1, HeightP1}, CR2, CR1}}.
+
+% double rotate right
+zickZickRotation({P1, CL1, CR1}) ->
+  FirstRotated = {P1, CL1, rotateRight(CR1)},
+  rotateRight(FirstRotated).
+
+% double rotate left
+zackZackRotation({P1, CL1, CR1}) ->
+  FirstRotated = {P1, rotateLeft(CL1), CR1},
+  rotateLeft(FirstRotated).
+
+% rotate right and then rotate left
+zickZackRotation({P1, CL1, CR1}) ->
+  FirstRotated = {P1, CL1, rotateRight(CR1)},
+  rotateLeft(FirstRotated).
+
+% rotate left and then rotate right
+zackZickRotation({P1, CL1, CR1}) ->
+  FirstRotated = {P1, rotateLeft(CL1), CR1},
+  rotateRight(FirstRotated).
