@@ -51,8 +51,8 @@ deleteBT({{Element, 1}, {}, {}}, Element) -> {};
 deleteBT({{Element, _}, LeftNode, RightNode}, Element) ->
   % using the height function instead of pattern matching secures
   % that this works even when one or both of the child nodes are empty
-  LeftHeight = tree_helper:max_height(LeftNode),
-  RightHeight = tree_helper:max_height(RightNode),
+  LeftHeight = tree_helper:height(LeftNode),
+  RightHeight = tree_helper:height(RightNode),
   if
     % getting the new parent from the partial tree with more levels secures that it works even when one partial tree is empty
     LeftHeight > RightHeight ->
@@ -101,14 +101,14 @@ findBT({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightN
   NewTree = tree_helper:rotate_right({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
   {LeftHeight, NewTree};
   % this uses new height of element
-  % NewHeight = tree_helper:max_height(NewTree),
+  % NewHeight = tree_helper:height(NewTree),
   % {NewHeight, NewTree};
 
 findBT({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}, Element) ->
   NewTree = tree_helper:rotate_left({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
   {RightHeight, NewTree};
   % this uses new height of element
-  % NewHeight = tree_helper:max_height(NewTree),
+  % NewHeight = tree_helper:height(NewTree),
   % {NewHeight, NewTree};
 
 findBT({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
@@ -138,14 +138,14 @@ findTP({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightN
   NewTree = tree_helper:rotate_right({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
   {LeftHeight, NewTree};
   % this uses new height of element
-  % NewHeight = tree_helper:max_height(NewTree),
+  % NewHeight = tree_helper:height(NewTree),
   % {NewHeight, NewTree};
 
 findTP({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}, Element) ->
   NewTree = tree_helper:rotate_left({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
   {RightHeight, NewTree};
   % this uses new height of element
-  % NewHeight = tree_helper:max_height(NewTree),
+  % NewHeight = tree_helper:height(NewTree),
   % {NewHeight, NewTree};
 
 findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
