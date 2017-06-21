@@ -1,8 +1,6 @@
 -module(splaytree).
 -export([initBT/0, isEmptyBT/1, equalBT/2, isBT/1, insertBT/2, deleteBT/2, findSBT/2, findBT/2, findTP/2, printBT/2]).
 
-% TODO: rework btree to match Klauck's requirements!
-
 % ADT Splay­Tree: Vorgabe:
 % Funktional (nach außen)
 %   1. Definition wie in der Vorlesung vorgestellt;
@@ -21,27 +19,27 @@
 
 % initBT: ∅ → btree
 % initBT()
-initBT() -> btree:init_btree().
+initBT() -> btree:initBT().
 
 
 % isEmptyBT: btree → bool
 % isEmptyBT(<BTree>)
-isEmptyBT(BTree) -> btree:is_empty(BTree).
+isEmptyBT(BTree) -> btree:isEmptyBT(BTree).
 
 
 % equalBT: btree × btree → bool
 % equalBT(<BTree>,<BTree>)
-equalBT(FirstBTree, SecondBTree) -> btree:equal(FirstBTree, SecondBTree).
+equalBT(FirstBTree, SecondBTree) -> btree:equalBT(FirstBTree, SecondBTree).
 
 
 % isBT: btree → bool
 % isBT(<BTree>)
-isBT(BTree) -> btree:is_btree(BTree).
+isBT(BTree) -> btree:isBT(BTree).
 
 
 % insertBT: btree × elem → btree
 % insertBT(<BTree>,<Element>)
-insertBT(BTree, Element) -> btree:insert_node(BTree, Element).
+insertBT(BTree, Element) -> btree:insertBT(BTree, Element).
 
 
 % deleteBT: btree × elem → btree

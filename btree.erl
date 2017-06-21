@@ -1,5 +1,5 @@
 -module(btree).
--export([init_btree/0, is_btree/1, insert_node/2, is_empty/1, equal/2]).
+-export([initBT/0, isBT/1, insertBT/2, isEmptyBT/1, equalBT/2]).
 
 
 % Pattern {{Parent, Height}, {LeftChild, Height}, {RightChild, Height}}
@@ -24,84 +24,84 @@
 % TT6 = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{5,2},{{11,1},{},{}},{{34,1},{},{}}}}}.
 
 
-% init_btree: ∅ → btree
-init_btree() -> {}.
+% initBT: ∅ → btree
+initBT() -> {}.
 
 
-% is_btree: btree → bool
-% is_btree checks if syntax, sorting and height are correct
+% isBT: btree → bool
+% isBT checks if syntax, sorting and height are correct
 % requirement: when checking, the tree must only be traversed once top-down and once bottom-up back from recursion
-is_btree({}) -> true;
-is_btree(Btree) -> is_btree(Btree, true).
+isBT({}) -> true;
+isBT(Btree) -> isBT(Btree, true).
 
 
-is_btree({{_Parent, Height}, {}, {}}, Boolean) -> Boolean and (Height == 1);
+isBT({{_Parent, Height}, {}, {}}, Boolean) -> Boolean and (Height == 1);
 
-is_btree({{Parent, Height}, {}, RightChild}, Boolean) ->
+isBT({{Parent, Height}, {}, RightChild}, Boolean) ->
   IsSortingCorrect = tree_helper:parent_element(RightChild) > Parent,
   IsHeightCorrect = (tree_helper:height(RightChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
-  is_btree(RightChild, IsTreeValid);
+  isBT(RightChild, IsTreeValid);
 
-is_btree({{Parent, Height}, LeftChild, {}}, Boolean) ->
+isBT({{Parent, Height}, LeftChild, {}}, Boolean) ->
   IsSortingCorrect = tree_helper:parent_element(LeftChild) < Parent,
   IsHeightCorrect = (tree_helper:height(LeftChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
-  is_btree(LeftChild, IsTreeValid);
+  isBT(LeftChild, IsTreeValid);
 
-is_btree({{Parent, Height}, LeftChild, RightChild}, Boolean) ->
+isBT({{Parent, Height}, LeftChild, RightChild}, Boolean) ->
   IsSortingCorrect = (tree_helper:parent_element(LeftChild) < Parent) and (tree_helper:parent_element(RightChild) > Parent),
   IsHeightCorrect = (tree_helper:max_height(LeftChild, RightChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
-  is_btree(LeftChild, IsTreeValid) and is_btree(RightChild, IsTreeValid);
+  isBT(LeftChild, IsTreeValid) and isBT(RightChild, IsTreeValid);
 
-is_btree(_Object, _Boolean) -> false.
+isBT(_Object, _Boolean) -> false.
 
 
-% insert_node: btree × elem → btree
+% insertBT: btree × elem → btree
 % elements in the partial left tree are smaller and in the partial right tree greater than parent
 % elements == parent are ignored
-insert_node({}, Element) -> tree_helper:init_leaf(Element);
+insertBT({}, Element) -> tree_helper:init_leaf(Element);
 
-insert_node({{Parent, _Height}, {}, RightChild}, Element) when Element < Parent ->
+insertBT({{Parent, _Height}, {}, RightChild}, Element) when Element < Parent ->
   NewLeftChild = tree_helper:init_leaf(Element),
   NewParentHeight = tree_helper:max_height(NewLeftChild, RightChild) + 1,
   {{Parent, NewParentHeight}, NewLeftChild, RightChild};
 
-insert_node({{Parent, _Height}, LeftChild, {}}, Element) when Element > Parent ->
+insertBT({{Parent, _Height}, LeftChild, {}}, Element) when Element > Parent ->
   NewRightChild = tree_helper:init_leaf(Element),
   NewParentHeight = tree_helper:max_height(LeftChild, NewRightChild) + 1,
   {{Parent, NewParentHeight}, LeftChild, NewRightChild};
 
-insert_node({{Parent, Height}, LeftChild, RightChild}, Element) when Element == Parent ->
+insertBT({{Parent, Height}, LeftChild, RightChild}, Element) when Element == Parent ->
   {{Parent, Height}, LeftChild, RightChild};
 
-insert_node({{Parent, _Height}, LeftChild, RightChild}, Element) ->
+insertBT({{Parent, _Height}, LeftChild, RightChild}, Element) ->
   if
     Element < Parent ->
-      NewLeftChild = insert_node(LeftChild, Element),
+      NewLeftChild = insertBT(LeftChild, Element),
       NewParentHeight = tree_helper:max_height(NewLeftChild, RightChild) + 1,
       {{Parent, NewParentHeight}, NewLeftChild, RightChild};
     Element > Parent ->
-      NewRightChild = insert_node(RightChild, Element),
+      NewRightChild = insertBT(RightChild, Element),
       NewParentHeight = tree_helper:max_height(LeftChild, NewRightChild) + 1,
       {{Parent, NewParentHeight}, LeftChild, NewRightChild}
   end.
 
 
-% is_empty: btree → bool
-is_empty(Btree) -> Btree == {}.
+% isEmptyBT: btree → bool
+isEmptyBT(Btree) -> Btree == {}.
 
 
-% equal: btree × btree → bool
-equal({}, {}) -> true;
-equal({}, _SecondBtree) -> false;
-equal(_FirstBtree, {}) -> false;
-equal({FirstParent, FirstLeftChild, FirstRightChild}, {SecondParent, SecondLeftChild, SecondRightChild}) ->
+% equalBT: btree × btree → bool
+equalBT({}, {}) -> true;
+equalBT({}, _SecondBtree) -> false;
+equalBT(_FirstBtree, {}) -> false;
+equalBT({FirstParent, FirstLeftChild, FirstRightChild}, {SecondParent, SecondLeftChild, SecondRightChild}) ->
   {FirstParentElem, FirstParentHeight} = FirstParent,
   {SecondParentElem, SecondParentHeight} = SecondParent,
   if
     (FirstParentElem == SecondParentElem) and (FirstParentHeight == SecondParentHeight) ->
-      equal(FirstLeftChild, SecondLeftChild) and equal(FirstRightChild, SecondRightChild);
+      equalBT(FirstLeftChild, SecondLeftChild) and equalBT(FirstRightChild, SecondRightChild);
     true -> false
   end.
