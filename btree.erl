@@ -1,6 +1,5 @@
 -module(btree).
--compile(export_all).
-% -export([init_btree/0, is_btree/1, insert_node/2, is_empty/1, equal/2]).
+-export([init_btree/0, is_btree/1, insert_node/2, is_empty/1, equal/2]).
 
 
 % Pattern {{Parent, Height}, {LeftChild, Height}, {RightChild, Height}}
@@ -39,20 +38,20 @@ is_btree(Btree) -> is_btree(Btree, true).
 is_btree({{_Parent, Height}, {}, {}}, Boolean) -> Boolean and (Height == 1);
 
 is_btree({{Parent, Height}, {}, RightChild}, Boolean) ->
-  IsSortingCorrect = parent_element(RightChild) > Parent,
-  IsHeightCorrect = (height(RightChild) + 1) == Height,
+  IsSortingCorrect = tree_helper:parent_element(RightChild) > Parent,
+  IsHeightCorrect = (tree_helper:height(RightChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
   is_btree(RightChild, IsTreeValid);
 
 is_btree({{Parent, Height}, LeftChild, {}}, Boolean) ->
-  IsSortingCorrect = parent_element(LeftChild) < Parent,
-  IsHeightCorrect = (height(LeftChild) + 1) == Height,
+  IsSortingCorrect = tree_helper:parent_element(LeftChild) < Parent,
+  IsHeightCorrect = (tree_helper:height(LeftChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
   is_btree(LeftChild, IsTreeValid);
 
 is_btree({{Parent, Height}, LeftChild, RightChild}, Boolean) ->
-  IsSortingCorrect = (parent_element(LeftChild) < Parent) and (parent_element(RightChild) > Parent),
-  IsHeightCorrect = (max_height(LeftChild, RightChild) + 1) == Height,
+  IsSortingCorrect = (tree_helper:parent_element(LeftChild) < Parent) and (tree_helper:parent_element(RightChild) > Parent),
+  IsHeightCorrect = (tree_helper:max_height(LeftChild, RightChild) + 1) == Height,
   IsTreeValid = IsSortingCorrect and IsHeightCorrect and Boolean,
   is_btree(LeftChild, IsTreeValid) and is_btree(RightChild, IsTreeValid);
 
@@ -62,16 +61,16 @@ is_btree(_Object, _Boolean) -> false.
 % insert_node: btree × elem → btree
 % elements in the partial left tree are smaller and in the partial right tree greater than parent
 % elements == parent are ignored
-insert_node({}, Element) -> init_leaf(Element);
+insert_node({}, Element) -> tree_helper:init_leaf(Element);
 
 insert_node({{Parent, _Height}, {}, RightChild}, Element) when Element < Parent ->
-  NewLeftChild = init_leaf(Element),
-  NewParentHeight = max_height(NewLeftChild, RightChild) + 1,
+  NewLeftChild = tree_helper:init_leaf(Element),
+  NewParentHeight = tree_helper:max_height(NewLeftChild, RightChild) + 1,
   {{Parent, NewParentHeight}, NewLeftChild, RightChild};
 
 insert_node({{Parent, _Height}, LeftChild, {}}, Element) when Element > Parent ->
-  NewRightChild = init_leaf(Element),
-  NewParentHeight = max_height(LeftChild, NewRightChild) + 1,
+  NewRightChild = tree_helper:init_leaf(Element),
+  NewParentHeight = tree_helper:max_height(LeftChild, NewRightChild) + 1,
   {{Parent, NewParentHeight}, LeftChild, NewRightChild};
 
 insert_node({{Parent, Height}, LeftChild, RightChild}, Element) when Element == Parent ->
@@ -81,11 +80,11 @@ insert_node({{Parent, _Height}, LeftChild, RightChild}, Element) ->
   if
     Element < Parent ->
       NewLeftChild = insert_node(LeftChild, Element),
-      NewParentHeight = max_height(NewLeftChild, RightChild) + 1,
+      NewParentHeight = tree_helper:max_height(NewLeftChild, RightChild) + 1,
       {{Parent, NewParentHeight}, NewLeftChild, RightChild};
     Element > Parent ->
       NewRightChild = insert_node(RightChild, Element),
-      NewParentHeight = max_height(LeftChild, NewRightChild) + 1,
+      NewParentHeight = tree_helper:max_height(LeftChild, NewRightChild) + 1,
       {{Parent, NewParentHeight}, LeftChild, NewRightChild}
   end.
 
@@ -106,44 +105,3 @@ equal({FirstParent, FirstLeftChild, FirstRightChild}, {SecondParent, SecondLeftC
       equal(FirstLeftChild, SecondLeftChild) and equal(FirstRightChild, SecondRightChild);
     true -> false
   end.
-
-
-% Helper
-% init_leaf: elem → btree
-init_leaf(Element) -> {{Element, 1}, {}, {}}.
-
-
-% parent_element: btree → integer
-% Get element of parent node of given (partial) tree
-parent_element({{Parent, _Height}, _LeftChild, _RightChild}) -> Parent;
-parent_element(_Object) -> nil.
-
-
-% height: btree → integer
-% Get height of parent node of given (partial) tree
-height({{_Parent, Height}, _LeftChild, _RightChild}) -> Height;
-height(_Object) -> 0.
-
-
-% max_height: btree × btree → integer
-% Get max. height of the two given (partial) trees
-max_height({}, {}) -> 0;
-max_height(FirstTree, SecondTree) -> max(height(FirstTree), height(SecondTree)).
-
-
-%% Find minimum value in tree
-%% No sub-tree on left side of parent => parent already minimum
-minimum_node({{Parent, _Height}, {}, _ChildRight}) ->
-  Parent;
-%% Still sub-tree on left side of parent => parent not minimum
-minimum_node({_Parent, ChildLeft, _ChildRight}) ->
-  minimum_node(ChildLeft).
-
-
-%% Find maximum value in tree
-%% No sub-tree on right side of parent => parent already maximum
-maximum_node({{Parent, _Height}, _ChildLeft, {}}) ->
-  Parent;
-%% Still sub-tree on right side of parent => parent not maximum
-maximum_node({_Parent, _ChildLeft, ChildRight}) ->
-  maximum_node(ChildRight).

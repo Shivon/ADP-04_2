@@ -1,8 +1,7 @@
 -module(splaytree).
--compile(export_all).
+-export([initBT/0, isEmptyBT/1, equalBT/2, isBT/1, insertBT/2, deleteBT/2, findSBT/2, findBT/2, findTP/2, printBT/2]).
 
 % TODO: rework btree to match Klauck's requirements!
-% -export([initBT/0, isEmptyBT/1, equalBT/2, isBT/1, insertBT/2, deleteBT/2, findSBT/2, findBT/2, findTP/2, printBT/2]).
 
 % ADT Splay­Tree: Vorgabe:
 % Funktional (nach außen)
@@ -52,27 +51,27 @@ deleteBT({{Element, 1}, {}, {}}, Element) -> {};
 deleteBT({{Element, _}, LeftNode, RightNode}, Element) ->
   % using the height function instead of pattern matching secures
   % that this works even when one or both of the child nodes are empty
-  LeftHeight = btree:height(LeftNode),
-  RightHeight = btree:height(RightNode),
+  LeftHeight = tree_helper:max_height(LeftNode),
+  RightHeight = tree_helper:max_height(RightNode),
   if
     % getting the new parent from the partial tree with more levels secures that it works even when one partial tree is empty
     LeftHeight > RightHeight ->
-      NewParent = btree:maximum_node(LeftNode),
+      NewParent = tree_helper:maximum_node(LeftNode),
       NewLeftNode = deleteBT(LeftNode, NewParent),
-      {{NewParent, btree:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
+      {{NewParent, tree_helper:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
     true ->
-      NewParent = btree:minimum_node(RightNode),
+      NewParent = tree_helper:minimum_node(RightNode),
       NewRightNode = deleteBT(RightNode, NewParent),
-      {{NewParent, btree:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode}
+      {{NewParent, tree_helper:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode}
   end;
 
 deleteBT({{Parent, _}, LeftNode, RightNode}, Element) when Element < Parent ->
   NewLeftNode = deleteBT(LeftNode, Element),
-  {{Parent, btree:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
+  {{Parent, tree_helper:max_height(NewLeftNode, RightNode) + 1}, NewLeftNode, RightNode};
 
 deleteBT({{Parent, _}, LeftNode, RightNode}, Element) when Element > Parent ->
   NewRightNode = deleteBT(RightNode, Element),
-  {{Parent, btree:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode};
+  {{Parent, tree_helper:max_height(LeftNode, NewRightNode) + 1}, LeftNode, NewRightNode};
 
 % Element is not in tree, tree gets returned
 deleteBT(Tree, _Element) ->
@@ -99,30 +98,30 @@ findBT({{Element, Height}, LeftNode, RightNode}, Element) ->
   {Height, {{Element, Height}, LeftNode, RightNode}};
 
 findBT({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}, Element) ->
-  NewTree = rotateRight({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
+  NewTree = tree_helper:rotate_right({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
   {LeftHeight, NewTree};
   % this uses new height of element
-  % NewHeight = btree:height(NewTree),
+  % NewHeight = tree_helper:max_height(NewTree),
   % {NewHeight, NewTree};
 
 findBT({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}, Element) ->
-  NewTree = rotateLeft({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
+  NewTree = tree_helper:rotate_left({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
   {RightHeight, NewTree};
   % this uses new height of element
-  % NewHeight = btree:height(NewTree),
+  % NewHeight = tree_helper:max_height(NewTree),
   % {NewHeight, NewTree};
 
 findBT({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
   {ElementHeight, NewLeftNode} = findBT(LeftNode, Element),
-  NewParentHeight = btree:max_height(NewLeftNode, RightNode) + 1,
+  NewParentHeight = tree_helper:max_height(NewLeftNode, RightNode) + 1,
   AccuTree = {{Parent, NewParentHeight}, NewLeftNode, RightNode},
-  {ElementHeight, rotateRight(AccuTree)};
+  {ElementHeight, tree_helper:rotate_right(AccuTree)};
 
 findBT({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element ->
   {ElementHeight, NewRightNode} = findBT(RightNode, Element),
-  NewParentHeight = btree:max_height(LeftNode, NewRightNode) + 1,
+  NewParentHeight = tree_helper:max_height(LeftNode, NewRightNode) + 1,
   AccuTree = {{Parent, NewParentHeight}, LeftNode, NewRightNode},
-  {ElementHeight, rotateLeft(AccuTree)}.
+  {ElementHeight, tree_helper:rotate_left(AccuTree)}.
 
 
 % findTP implements the transpose strategy
@@ -136,27 +135,27 @@ findTP({{Element, Height}, LeftNode, RightNode}, Element) ->
   {Height, {{Element, Height}, LeftNode, RightNode}};
 
 findTP({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}, Element) ->
-  NewTree = rotateRight({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
+  NewTree = tree_helper:rotate_right({ParentNode, {{Element, LeftHeight}, LeftLeftNode, LeftRightNode}, RightNode}),
   {LeftHeight, NewTree};
   % this uses new height of element
-  % NewHeight = btree:height(NewTree),
+  % NewHeight = tree_helper:max_height(NewTree),
   % {NewHeight, NewTree};
 
 findTP({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}, Element) ->
-  NewTree = rotateLeft({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
+  NewTree = tree_helper:rotate_left({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
   {RightHeight, NewTree};
   % this uses new height of element
-  % NewHeight = btree:height(NewTree),
+  % NewHeight = tree_helper:max_height(NewTree),
   % {NewHeight, NewTree};
 
 findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
   {ElementHeight, NewLeftNode} = findTP(LeftNode, Element),
-  NewParentHeight = btree:max_height(NewLeftNode, RightNode) + 1,
+  NewParentHeight = tree_helper:max_height(NewLeftNode, RightNode) + 1,
   {ElementHeight, {{Parent, NewParentHeight}, NewLeftNode, RightNode}};
 
 findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element ->
   {ElementHeight, NewRightNode} = findTP(RightNode, Element),
-  NewParentHeight = btree:max_height(LeftNode, NewRightNode) + 1,
+  NewParentHeight = tree_helper:max_height(LeftNode, NewRightNode) + 1,
   {ElementHeight, {{Parent, NewParentHeight}, LeftNode, NewRightNode}}.
 
 
@@ -164,42 +163,5 @@ findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element 
 % printBT(<BTree>,<Filename>)
 printBT(BTree, Filename) ->
   file:write_file(Filename, io_lib:fwrite("digraph avltree {  \n", []), [write]),
-  writeToFile(BTree, Filename),
+  tree_helper:write_to_file(BTree, Filename),
   file:write_file(Filename, io_lib:fwrite("} \n", []), [append]).
-
-
-
-% Helper
-% rotate left = zack rotation
-rotateLeft({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
-  %% Update height P1 and P2 (all others remain the same)
-  HeightP1 = btree:max_height(CL1, CL2) + 1,
-  HeightP2 = max(btree:height(CR2), HeightP1) + 1,
-  {{P2, HeightP2}, {{P1, HeightP1}, CL1, CL2}, CR2}.
-
-% rotate right = zick rotation
-rotateRight({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
-  %% Update height P1 and P2 (all others remain the same)
-  HeightP1 = btree:max_height(CR1, CR2) + 1,
-  HeightP2 = max(btree:height(CL2), HeightP1) + 1,
-  {{P2, HeightP2}, CL2, {{P1, HeightP1}, CR2, CR1}}.
-
-
-% writes tree to given file
-writeToFile({{_Parent, 1}, _LeftChild, _RightChild}, _Filename) ->
-  ok;
-writeToFile({{Parent, _Height}, {}, RightChild}, Filename) ->
-  {{CR1, HR1},_,_} = RightChild,
-  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
-  writeToFile(RightChild, Filename);
-writeToFile({{Parent, _Height}, LeftChild, {}}, Filename) ->
-  {{CL1, HL1},_,_} = LeftChild,
-  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
-  writeToFile(LeftChild, Filename);
-writeToFile({{Parent, _Height}, LeftChild, RightChild}, Filename) ->
-  {{CL1, HL1},_,_} = LeftChild,
-  {{CR1, HR1},_,_} = RightChild,
-  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CL1, HL1+1]), [append]),
-  file:write_file(Filename, io_lib:fwrite("  ~p -> ~p [label = ~p];  \n",   [Parent, CR1, HR1+1]), [append]),
-  writeToFile(LeftChild, Filename),
-  writeToFile(RightChild, Filename).
