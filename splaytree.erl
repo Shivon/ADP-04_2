@@ -110,25 +110,27 @@ findTP({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRight
   {RightHeight, NewTree};
 
 findTP({{Parent, Height}, LeftNode, RightNode}, Element) when Parent > Element ->
-  {ElementHeight, NewLeftNode} = findTP(LeftNode, Element),
-  LeftNodeUnchanged = equalBT(LeftNode, NewLeftNode),
+  {{LeftChild, _LeftHeight}, LeftLeftNode, RightLeftNode} = LeftNode,
   if
-    LeftNodeUnchanged ->
+    % element not in tree
+    ((LeftChild > Element) and (LeftLeftNode == {})) or ((LeftChild < Element) and (RightLeftNode == {})) ->
       NewTree = tree_helper:rotate_right({{Parent, Height}, LeftNode, RightNode}),
-      {ElementHeight, NewTree};
+      {0, NewTree};
     true ->
+      {ElementHeight, NewLeftNode} = findTP(LeftNode, Element),
       NewParentHeight = tree_helper:max_height(NewLeftNode, RightNode) + 1,
       {ElementHeight, {{Parent, NewParentHeight}, NewLeftNode, RightNode}}
   end;
 
 findTP({{Parent, Height}, LeftNode, RightNode}, Element) when Parent < Element ->
-  {ElementHeight, NewRightNode} = findTP(RightNode, Element),
-  RightNodeUnchanged = equalBT(RightNode, NewRightNode),
+  {{RightChild, _RightHeight}, LeftRightNode, RightRightNode} = RightNode,
   if
-    RightNodeUnchanged ->
+    % element not in tree
+    ((RightChild > Element) and (LeftRightNode == {})) or ((RightChild < Element) and (RightRightNode == {})) ->
       NewTree = tree_helper:rotate_left({{Parent, Height}, LeftNode, RightNode}),
-      {ElementHeight, NewTree};
+      {0, NewTree};
     true ->
+      {ElementHeight, NewRightNode} = findTP(RightNode, Element),
       NewParentHeight = tree_helper:max_height(LeftNode, NewRightNode) + 1,
       {ElementHeight, {{Parent, NewParentHeight}, LeftNode, NewRightNode}}
   end.
