@@ -6,10 +6,12 @@
 initBT_test() -> {} = splaytree:initBT().
 
 
+
 isEmptyBT_empty_test() -> true = splaytree:isEmptyBT({}).
 isEmptyBT_not_empty_test() ->
   NotEmptyTree = {{7,2},{},{{10,1},{},{}}},
   false = splaytree:isEmptyBT(NotEmptyTree).
+
 
 
 equalBT_equal_test() ->
@@ -20,6 +22,7 @@ equalBT_not_equal_test() ->
   FirstTree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
   SecondTree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{34,1},{},{}}}}},
   false = splaytree:equalBT(FirstTree, SecondTree).
+
 
 
 isBT_valid_tree_test() ->
@@ -41,6 +44,7 @@ isBT_invalid_format_tree_test() ->
 % findSBT/2
 
 
+
 findBT_successful_search_test() ->
   Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
   ExpectedModifiedTree = {{33, 5}, {{6, 4}, {{3, 1}, {}, {}}, {{10, 3}, {{9, 1}, {}, {}}, {{15, 2}, {{11, 1}, {}, {}}, {}}}}, {}},
@@ -60,21 +64,27 @@ findBT_unsuccessful_search_big_number_test() ->
   0 = splaytree:findSBT(ModifiedTree, 999).
 
 
-% findTP/2
+
 findTP_successful_search_test() ->
   Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
   ExpectedModifiedTree = {{6,5}, {{3,1},{},{}}, {{10,4}, {{9,1},{},{}}, {{33,3}, {{15,2}, {{11,1},{},{}},{}},{}}}},
   {1, ExpectedModifiedTree} = splaytree:findTP(Tree, 33),
   3 = splaytree:findSBT(ExpectedModifiedTree, 33).
 
-% findBT_unsuccessful_search_small_number_test() ->
-%   Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
-%   ModifiedTree = {{3,5}, {}, {{6,4}, {}, {{10,3}, {{9,1},{},{}}, {{15,2}, {{11,1},{},{}}, {{33,1},{},{}}}}}},
-%   {0, ModifiedTree} = splaytree:findBT(Tree, 1),
-%   0 = splaytree:findSBT(ModifiedTree, 1).
-%
-% findBT_unsuccessful_search_big_number_test() ->
-%   Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
-%   ModifiedTree = {{33,5}, {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2}, {{11,1},{},{}}, {}}}}, {}},
-%   {0, ModifiedTree} = splaytree:findBT(Tree, 999),
-%   0 = splaytree:findSBT(ModifiedTree, 999).
+findTP_unsuccessful_search_small_number_test() ->
+  Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
+  ModifiedTree = {{3,5}, {}, {{6,4},{}, {{10,3}, {{9,1},{},{}}, {{15,2}, {{11,1},{},{}}, {{33,1},{},{}}}}}},
+  {0, ModifiedTree} = splaytree:findTP(Tree, 1),
+  0 = splaytree:findSBT(ModifiedTree, 1).
+
+findTP_unsuccessful_search_big_number_test() ->
+  Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
+  ModifiedTree = {{6,5}, {{3,1},{},{}}, {{10,4}, {{9,1},{},{}}, {{33,3}, {{15,2}, {{11,1},{},{}},{}},{}}}},
+  {0, ModifiedTree} = splaytree:findTP(Tree, 999),
+  0 = splaytree:findSBT(ModifiedTree, 999).
+
+findTP_unsuccessful_search_median_number_test() ->
+  Tree = {{6,4}, {{3,1},{},{}}, {{10,3}, {{9,1},{},{}}, {{15,2},{{11,1},{},{}},{{33,1},{},{}}}}},
+  ModifiedTree = {{6,5}, {{3,1},{},{}}, {{10,4}, {{9,1},{},{}}, {{11,3},{}, {{15,2},{}, {{33,1},{},{}}}}}},
+  {0, ModifiedTree} = splaytree:findTP(Tree, 14),
+  0 = splaytree:findSBT(ModifiedTree, 14).
