@@ -82,10 +82,8 @@ findmf(List, Element) ->
 findtp(List, Element) -> findtp(List, Element, 1).
 
 findtp([], _Element, _AccuPosition) -> {nil, []};
-findtp([Head | Tail], Element, AccuPosition) when Head == Element ->
-  {AccuPosition, [Head | Tail]};
-findtp([First, Second | Tail], Element, AccuPosition) when Second == Element ->
-  {AccuPosition + 1, [Second, First | Tail]};
+findtp([Element | Tail], Element, AccuPosition) -> {AccuPosition, [Element | Tail]};
+findtp([Head, Element | Tail], Element, AccuPosition) -> {AccuPosition + 1, [Element, Head | Tail]};
 findtp([Head | Tail], Element, AccuPosition) ->
   {Position, PartialList} = findtp(Tail, Element, AccuPosition + 1),
   {Position, [Head | PartialList]}.
