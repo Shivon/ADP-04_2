@@ -88,3 +88,60 @@ findTP_unsuccessful_search_median_number_test() ->
   ModifiedTree = {{6,5}, {{3,1},{},{}}, {{10,4}, {{9,1},{},{}}, {{11,3},{}, {{15,2},{}, {{33,1},{},{}}}}}},
   {0, ModifiedTree} = splaytree:findTP(Tree, 14),
   0 = splaytree:findSBT(ModifiedTree, 14).
+
+
+big_list_runtime_test() ->
+  BigList = util:randomliste(1000),
+  BigTree = insert_nodes({}, BigList),
+  SearchListWithDuplicates = util:randomlisteD(1000, 1, 1000),
+
+  StartTP = util:timeMilliSecond(),
+  {_OldHeightElementTP, FinalTreeTP} = find_all_TP(BigTree, SearchListWithDuplicates),
+  EndTP = util:timeMilliSecond(),
+  splaytree:printBT(FinalTreeTP, "runtime_test_TP.dot"),
+
+  StartBT = util:timeMilliSecond(),
+  {_OldHeightElementBT, FinalTreeBT} = find_all_BT(BigTree, SearchListWithDuplicates),
+  EndBT = util:timeMilliSecond(),
+  splaytree:printBT(FinalTreeBT, "runtime_test_BT.dot"),
+
+  file:write_file("runtime_logging_big_list.log", io_lib:fwrite("FindTP | start: ~p, end: ~p \n", [StartTP, EndTP]), [write]),
+  file:write_file("runtime_logging_big_list.log", io_lib:fwrite("FindBT | start: ~p, end: ~p \n", [StartBT, EndBT]), [append]).
+
+
+same_search_runtime_test() ->
+  BigList = util:randomliste(1000),
+  BigTree = insert_nodes({}, BigList),
+  SearchListWithDuplicates = [378, 378],
+
+  StartTP = util:timeMilliSecond(),
+  {_OldHeightElementTP, FinalTreeTP} = find_all_TP(BigTree, SearchListWithDuplicates),
+  EndTP = util:timeMilliSecond(),
+  splaytree:printBT(FinalTreeTP, "duplicate_test_TP.dot"),
+
+  StartBT = util:timeMilliSecond(),
+  {_OldHeightElementBT, FinalTreeBT} = find_all_BT(BigTree, SearchListWithDuplicates),
+  EndBT = util:timeMilliSecond(),
+  splaytree:printBT(FinalTreeBT, "duplicate_test_BT.dot"),
+
+  file:write_file("runtime_logging_duplicates.log", io_lib:fwrite("FindTP | start: ~p, end: ~p \n", [StartTP, EndTP]), [write]),
+  file:write_file("runtime_logging_duplicates.log", io_lib:fwrite("FindBT | start: ~p, end: ~p \n", [StartBT, EndBT]), [append]).
+
+
+% Helper
+insert_nodes(BTree, [Element | []]) -> splaytree:insertBT(BTree, Element);
+insert_nodes(BTree, [Element | Tail]) ->
+  NewTree = splaytree:insertBT(BTree, Element),
+  insert_nodes(NewTree, Tail).
+
+
+find_all_TP(BTree, [Element | []]) -> splaytree:findTP(BTree, Element);
+find_all_TP(BTree, [Element | Tail]) ->
+  {_OldHeightElement, NewTree} = splaytree:findTP(BTree, Element),
+  find_all_TP(NewTree, Tail).
+
+
+find_all_BT(BTree, [Element | []]) -> splaytree:findBT(BTree, Element);
+find_all_BT(BTree, [Element | Tail]) ->
+  {_OldHeightElement, NewTree} = splaytree:findBT(BTree, Element),
+  find_all_BT(NewTree, Tail).
