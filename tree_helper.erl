@@ -43,18 +43,20 @@ maximum_node({_Parent, _ChildLeft, ChildRight}) ->
 
 
 % rotate left = zack rotation
+rotate_left({ParentNode, {}, {}}) -> {ParentNode, {}, {}};
 rotate_left({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
   % Update height P1 and P2 (all others remain the same)
-  HeightP1 = tree_helper:max_height(CL1, CL2) + 1,
-  HeightP2 = max(tree_helper:max_height(CR2), HeightP1) + 1,
+  HeightP1 = max_height(CL1, CL2) + 1,
+  HeightP2 = max(height(CR2), HeightP1) + 1,
   {{P2, HeightP2}, {{P1, HeightP1}, CL1, CL2}, CR2}.
 
 
 % rotate right = zick rotation
+rotate_right({ParentNode, {}, {}}) -> {ParentNode, {}, {}};
 rotate_right({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
   % Update height P1 and P2 (all others remain the same)
-  HeightP1 = tree_helper:max_height(CR1, CR2) + 1,
-  HeightP2 = max(tree_helper:max_height(CL2), HeightP1) + 1,
+  HeightP1 = max_height(CR1, CR2) + 1,
+  HeightP2 = max(height(CL2), HeightP1) + 1,
   {{P2, HeightP2}, CL2, {{P1, HeightP1}, CR2, CR1}}.
 
 
