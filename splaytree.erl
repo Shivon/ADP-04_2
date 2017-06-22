@@ -109,15 +109,29 @@ findTP({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRight
   NewTree = tree_helper:rotate_left({ParentNode, LeftNode, {{Element, RightHeight}, RightLeftNode, RightRightNode}}),
   {RightHeight, NewTree};
 
-findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent > Element ->
+findTP({{Parent, Height}, LeftNode, RightNode}, Element) when Parent > Element ->
   {ElementHeight, NewLeftNode} = findTP(LeftNode, Element),
-  NewParentHeight = tree_helper:max_height(NewLeftNode, RightNode) + 1,
-  {ElementHeight, {{Parent, NewParentHeight}, NewLeftNode, RightNode}};
+  LeftNodeUnchanged = equalBT(LeftNode, NewLeftNode),
+  if
+    LeftNodeUnchanged ->
+      NewTree = tree_helper:rotate_right({{Parent, Height}, LeftNode, RightNode}),
+      {ElementHeight, NewTree};
+    true ->
+      NewParentHeight = tree_helper:max_height(NewLeftNode, RightNode) + 1,
+      {ElementHeight, {{Parent, NewParentHeight}, NewLeftNode, RightNode}}
+  end;
 
-findTP({{Parent, _Height}, LeftNode, RightNode}, Element) when Parent < Element ->
+findTP({{Parent, Height}, LeftNode, RightNode}, Element) when Parent < Element ->
   {ElementHeight, NewRightNode} = findTP(RightNode, Element),
-  NewParentHeight = tree_helper:max_height(LeftNode, NewRightNode) + 1,
-  {ElementHeight, {{Parent, NewParentHeight}, LeftNode, NewRightNode}}.
+  RightNodeUnchanged = equalBT(RightNode, NewRightNode),
+  if
+    RightNodeUnchanged ->
+      NewTree = tree_helper:rotate_left({{Parent, Height}, LeftNode, RightNode}),
+      {ElementHeight, NewTree};
+    true ->
+      NewParentHeight = tree_helper:max_height(LeftNode, NewRightNode) + 1,
+      {ElementHeight, {{Parent, NewParentHeight}, LeftNode, NewRightNode}}
+  end.
 
 
 % printBT: btree × filename → dot

@@ -43,6 +43,7 @@ maximum_node({_Parent, _ChildLeft, ChildRight}) ->
 
 
 % rotate left = zack rotation
+rotate_left({}) -> {};
 rotate_left({ParentNode, {}, {}}) -> {ParentNode, {}, {}};
 rotate_left({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
   % Update height P1 and P2 (all others remain the same)
@@ -52,6 +53,7 @@ rotate_left({{P1, _}, CL1, {{P2, _}, CL2, CR2}}) ->
 
 
 % rotate right = zick rotation
+rotate_right({}) -> {};
 rotate_right({ParentNode, {}, {}}) -> {ParentNode, {}, {}};
 rotate_right({{P1, _}, {{P2, _}, CL2, CR2}, CR1}) ->
   % Update height P1 and P2 (all others remain the same)
