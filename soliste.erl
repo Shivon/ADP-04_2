@@ -32,7 +32,7 @@ isList(_Non_List) -> false.
 
 
 % equal: list × list → bool
-equal(FirstList, SecondList) -> FirstList == SecondList.
+equal(FirstList, SecondList) -> FirstList =:= SecondList.
 
 
 % laenge: list → int
@@ -67,8 +67,12 @@ finds([_Head | Tail], Element, AccuPosition) -> finds(Tail, Element, AccuPositio
 % findmf: list × elem → {pos,list}
 findmf(List, Element) ->
   Position = finds(List, Element),
-  ModifiedList = insert(delete(List, Element), Element),
-  {Position, ModifiedList}.
+  if
+    Position == nil -> {Position, List};
+    true ->
+      ModifiedList = insert(delete(List, Element), Element),
+      {Position, ModifiedList}
+  end.
 
 
 % findtp implements the transpose strategy
@@ -77,7 +81,7 @@ findmf(List, Element) ->
 % findtp: list × elem → {pos,list}
 findtp(List, Element) -> findtp(List, Element, 1).
 
-findtp([], _Element, _AccuPosition) -> nil;
+findtp([], _Element, _AccuPosition) -> {nil, []};
 findtp([Head | Tail], Element, AccuPosition) when Head == Element ->
   {AccuPosition, [Head | Tail]};
 findtp([First, Second | Tail], Element, AccuPosition) when Second == Element ->
